@@ -10,9 +10,10 @@ import numpy as np
 import matplotlib as plt
 
 train_x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 5]
-test_x = []
 train_y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 2, 6]
-test_y = []
+
+test_x = [0, 2, 3, 4, 9, 5]
+test_y = [1, 3, 4, 5, 0, 6]
 
 def transform_to_binary(X, y, dim, classes):
 	m = len(X)
@@ -32,7 +33,7 @@ def transform_to_binary(X, y, dim, classes):
 		temp[y[i]] = 0
 	return bin_X, bin_y
 
-# Helper function
+# Activation function
 def sigmoid(z):
     s = 1 / (1 + np.exp(-z))
     return s
@@ -95,22 +96,28 @@ def predict_OnevsAll(X, W, b):
 		Z = np.dot(W[:, k].T, X) + b[0, k]
 		A = sigmoid(Z)
 		all_A[k, :] = A
-	print all_A
-	print "----------"
-	print np.amax(all_A, axis=0)
-	print "----------"
-	print np.argmax(all_A, axis=0)
-	print "----------"
+	#print all_A
+	#print "----------"
+	#print np.amax(all_A, axis=0)
+	#print "----------"
+	#print np.argmax(all_A, axis=0)
+	return np.argmax(all_A, axis=0)
 
 
 	
 
 if __name__ == '__main__':
+
+	train_x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 5]
+	train_y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 2, 6]
+
+	test_x = [0, 2, 3, 4, 9, 5]
+	test_y = [1, 3, 4, 5, 0, 6]
+
 	X, y = transform_to_binary(train_x, train_y, 4, 10)
 	W, b, costs = propagate(X, y, 4, 10000, 0.1)
-	test_x = [0, 2, 3, 4, 9, 5, 6, 3, 0, 7, 1, 8, 0, 2, 3, 5, 9, 0, 1, 2, 7, 6, 6, 2, 7]
-	test_y = [1, 3, 4, 5, 0, 6, 7, 4, 1, 8, 2, 9, 1, 3, 4, 6, 0, 1, 2, 3, 8, 7, 7, 3, 8]
+
 	X, y = transform_to_binary(test_x, test_x, 4, 10)
-	predict_OnevsAll(X, W, b)
+	print "Predicted Values: {}".format(predict_OnevsAll(X, W, b))
 	print "Real values: {}".format(test_y)  
 
