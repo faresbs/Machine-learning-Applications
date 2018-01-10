@@ -7,7 +7,7 @@ using python 2.7 / Numpy and matplotlib for visualization
 """
 
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 def transform_to_binary(X, y, dim, classes):
 	m = len(X)
@@ -153,8 +153,6 @@ def predict_testSet(X, W, b):
 # Count from a to c (you can't exceed 9 because the machine has learned how to to count until 9)
 # a is the starting point and c is the end point
 
-# FIX ME 
-
 def count(a, c, W, b, dim):
 	
 	numbers = []
@@ -171,6 +169,19 @@ def count(a, c, W, b, dim):
 			numbers.append(i)
 	return numbers
 
+# Visualize the learning curve
+def visualize(costs, iter):
+	iterations = np.arange(0, iter, 100)
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+	ax.plot(iterations, costs, color='lightblue', linewidth=2)
+
+	ax.set(title='Learning curve', ylabel='Cost', xlabel='Iterations')
+
+	plt.savefig('Learning_curve.png')
+	plt.show()
+	
+	return None 
 
 if __name__ == '__main__':
 
@@ -187,6 +198,8 @@ if __name__ == '__main__':
 	print "Predicted Values: {}".format(predict_testSet(X, W, b))
 	print "Real values: {}".format(test_y)  
 	print "Cost: {}".format(costs)
+
+	visualize(costs, 1000)
 	#print count(0, 9, W, b, 4)
 
 	
