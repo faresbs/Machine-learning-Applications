@@ -1,13 +1,11 @@
 """
-Logistic regression to teach the machine how to count 
-X = 1 -> y = 2
-X = 5 -> y = 6
-X = 9 -> y = 0
+Logistic regression to teach the machine how to count digits.
 using python 2.7 / Numpy and matplotlib for visualization 
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 def transform_to_binary(X, y, dim, classes):
 	m = len(X)
@@ -27,10 +25,12 @@ def transform_to_binary(X, y, dim, classes):
 		temp[y[i]] = 0
 	return bin_X, bin_y
 
+
 # Activation function
 def sigmoid(z):
     s = 1 / (1 + np.exp(-z))
     return s
+
 
 # Initialize our parameters (weights W and bias b with zeros) 
 def initialize(dim, classes):
@@ -39,6 +39,7 @@ def initialize(dim, classes):
 	w = np.zeros((dim, classes))
 	b = np.zeros((1, classes))
 	return w, b
+
 
 def cost_function(A, y):
 	m = np.shape(y)[1]
@@ -52,6 +53,7 @@ def cost_function(A, y):
 	J = float("{0:.3f}".format(J))
 
 	return J
+
 
 def propagate(X, y, dim, iter, l_rate):
 	m = np.shape(X)[1]
@@ -101,7 +103,6 @@ def propagate(X, y, dim, iter, l_rate):
 	return all_W, all_b, costs
 
 
-
 def predict(a, W, b, dim):
 	all_A =[]
 	classes = np.shape(W)[1]
@@ -127,7 +128,6 @@ def predict(a, W, b, dim):
 	return np.argmax(all_A)
 
 
-
 def predict_testSet(X, W, b):
 	classes = np.shape(W)[1]
 	m = np.shape(X)[1]
@@ -149,12 +149,10 @@ def predict_testSet(X, W, b):
 	return np.argmax(all_A, axis=0)
 
 
-
 # Count from a to c (you can't exceed 9 because the machine has learned how to to count until 9)
 # a is the starting point and c is the end point
 
 def count(a, c, W, b, dim):
-	
 	numbers = []
 	i = predict(a, W, b, dim)
 
@@ -169,6 +167,7 @@ def count(a, c, W, b, dim):
 			numbers.append(i)
 	return numbers
 
+
 # Visualize the learning curve
 def visualize(costs, iter):
 	iterations = np.arange(0, iter, 100)
@@ -176,31 +175,36 @@ def visualize(costs, iter):
 	ax = fig.add_subplot(111)
 	ax.plot(iterations, costs, color='lightblue', linewidth=2)
 
-	ax.set(title='Learning curve', ylabel='Cost', xlabel='Iterations')
+	ax.set(title='Learning rate = 0.01', ylabel='Cost', xlabel='Iterations')
 
-	plt.savefig('Learning_curve.png')
+	plt.savefig('Learning_curve (learning_rate = 0.01).png')
 	plt.show()
 	
 	return None 
+
 
 if __name__ == '__main__':
 
 	train_x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 	train_y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
 
+	X, y = transform_to_binary(train_x, train_y, 4, 10)
+	W, b, costs = propagate(X, y, 4, 1000, 0.01)
+
+	#print predict(3, W, b, 4)
+
 	test_x = [0, 2, 3, 4, 9, 5, 9, 1]
 	test_y = [1, 3, 4, 5, 0, 6, 0, 2]
-
-	X, y = transform_to_binary(train_x, train_y, 4, 10)
-	W, b, costs = propagate(X, y, 4, 1000, 0.1)
 
 	X, y = transform_to_binary(test_x, test_y, 4, 10)
 	print "Predicted Values: {}".format(predict_testSet(X, W, b))
 	print "Real values: {}".format(test_y)  
 	print "Cost: {}".format(costs)
 
-	visualize(costs, 1000)
 	#print count(0, 9, W, b, 4)
+	
+	visualize(costs, 1000)
+	
 
 	
 
