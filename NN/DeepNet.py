@@ -1,5 +1,5 @@
 # Deep Neural networks 
-# Using the CIFAR-10 dataset
+# CIFAR-10 dataset
 
 import time
 import numpy as np
@@ -10,10 +10,6 @@ from PIL import Image
 from scipy import ndimage
 import cPickle
 
-
-plt.rcParams['figure.figsize'] = (5.0, 4.0) # set default size of plots
-plt.rcParams['image.interpolation'] = 'nearest'
-plt.rcParams['image.cmap'] = 'gray'
 
 np.random.seed(1)
 
@@ -58,7 +54,7 @@ def relu(Z):
 
 def softmax(Z):
 	t = np.exp(Z)
-	A = t / np.sum(t)
+	A = t / np.sum(t, axis=0)
 	return A
 
 
@@ -81,24 +77,26 @@ def initialize_parameters(layer_dims):
 
 
 def forward_propagation(A_prev, W, b, activation):
+
 	if(activation == "relu"):
 		# Forward pass
-		Z = np.dot(W, A_prev.T) + b
+		Z = np.dot(W, A_prev) + b
 		A = relu(Z)
 		# Check Z dim
-		assert(Z.shape == (W.shape[0], A_prev.shape[0]))
+		assert(Z.shape == (W.shape[0], A_prev.shape[1]))
 
 	if(activation == "softmax"):
 		# Forward pass
-		Z = np.dot(W, A_prev.T) + b
+		Z = np.dot(W, A_prev) + b
 		A = softmax(Z)
 		# Check Z dim
-		assert(Z.shape == (W.shape[0], A_prev.shape[0]))		
+		assert(Z.shape == (W.shape[0], A_prev.shape[1]))
 
 	return A, Z
 
 
-# MAYBE WE NEED JUST ONE LOOP OVER THE FORWARD BACKWARD PASS
+# FIX: WHAT YOU DO WITH DIFFERENT SIZED LAYERS
+
 def forward_model(X, parameters):
 
 	caches = []
@@ -106,34 +104,56 @@ def forward_model(X, parameters):
 	A = X
 	for l in range(1, L):
 		A_prev = A
+
 		A, Z = forward_propagation(A_prev, parameters['W' + str(l)], parameters['b' + str(l)], "relu")
+		
 		cache = (A, Z)
+		print np.shape(cache)
 		caches.append(cache)
 
 	# Apply Softmax on the last layer
 	AL, Z = forward_propagation(A_prev, parameters['W' + str(L)], parameters['b' + str(L)], "softmax")
+
 	cache = (AL, Z)
 	caches.append(cache)
 
-	# AL needs to be the same shape as y (m, 10)
-	assert(AL.shape[0] == X.shape[1])
-
+	# AL needs to be the same shape as y (10, m)
+	assert(AL.shape[1] == X.shape[1])
 	return AL, caches
 
 
 
 def cost_function(AL, y):
 	m = np.shape(y)[0]
-	# Cross entropy
+	# Reshape y to be size of (classes, m) like AL
+	y = y.T
+	# Categorical Cross entropy for softmax
 	J = 0
-	J = J + ((-1./m) * (np.dot(y.T, np.log(AL)) + np.dot((1 - y).T, np.log(1 - AL))))
-	J = np.squeeze(J)
+	print (-1./m) * (np.sum(np.sum(np.multiply(y, np.log(AL)), axis=0)))
 	return J
 
 
 
-def backward_prop():
-	return
+def backward_prop(dA, cache, cached_parameters, activation):
+	W, b = cached_parameters
+	A, Z = cache
+	
+	if(activation = "relu"):
+		if(Z > 0):
+			dZ = 1
+		elif
+			dZ = 0
+	# Fix Softmax	
+	elif(activation = "softmax"):
+		dZ = 
+
+
+	dW = (1./m) * np.dot(dZ, A.T)
+    db = (1./m) * np.squeeze(np.sum(dZ, axis=1, keepdims=True))
+    dA_prev = np.dot(parameters[0].T, dZ)
+
+
+	return	dA_prev, dW, db
 
 
 
@@ -144,13 +164,18 @@ train_y_batch_1 = batch_1["labels"]
 
 n = np.shape(train_X_batch_1)[1]
 
-transform_labels(train_y_batch_1, 10)
+y = transform_labels(train_y_batch_1, 10)
 
-# Create DeepNet with 2 hidden layers
-# First layer is the input layer
-layer_dims = [n, 4, 4, 4]
+# Reshape X from (m, n) to (n, m)
+train_X_batch_1 = train_X_batch_1.T
+
+# 3 hidden layers
+# First layer is the input layer, the last layer is the output layer with 10 classes
+layer_dims = [n, 4, 4, 4, 10]
 parameters = initialize_parameters(layer_dims)
-forward_model(train_X_batch_1, parameters)
+AL, cache = forward_model(train_X_batch_1, parameters)
+
+cost_function(AL, y)
 
 
 
