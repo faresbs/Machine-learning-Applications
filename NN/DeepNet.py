@@ -108,7 +108,6 @@ def forward_model(X, parameters):
 		A, Z = forward_propagation(A_prev, parameters['W' + str(l)], parameters['b' + str(l)], "relu")
 		
 		cache = (A, Z)
-		print np.shape(cache)
 		caches.append(cache)
 
 	# Apply Softmax on the last layer
@@ -129,29 +128,40 @@ def cost_function(AL, y):
 	y = y.T
 	# Categorical Cross entropy for softmax
 	J = 0
-	print (-1./m) * (np.sum(np.sum(np.multiply(y, np.log(AL)), axis=0)))
+	J = J + (-1./m) * (np.sum(np.sum(np.multiply(y, np.log(AL)), axis=0)))
 	return J
 
 
 
-def backward_prop(dA, cache, cached_parameters, activation):
-	W, b = cached_parameters
-	A, Z = cache
+def backward_prop(y, cache, cached_parameters, activation):
 	
-	if(activation = "relu"):
+	# Retrive cached values from forward prop
+	W, b = cached_parameters
+	A, Z, A_prev = cache
+
+	# Reshape y to be size of (classes, m) like dAL
+	y = y.T
+
+	m = np.shape(y)[1]
+	
+	if(activation == "relu"):
 		if(Z > 0):
 			dZ = 1
-		elif
+		elif (activation == "softmax"):
 			dZ = 0
-	# Fix Softmax	
-	elif(activation = "softmax"):
-		dZ = 
 
+	elif(activation == "softmax"):
+		dZ = A - y 
 
-	dW = (1./m) * np.dot(dZ, A.T)
-    db = (1./m) * np.squeeze(np.sum(dZ, axis=1, keepdims=True))
-    dA_prev = np.dot(parameters[0].T, dZ)
+	dW = (1./m) * np.dot(dZ, A_prev.T)
+	db = (1./m) * np.sum(dZ, axis=1, keepdims=True)
+	
+	dA_prev = np.dot(W.T, dZ)
 
+	# gradients same dim as the cached values
+	assert (dW.shape == W.shape)
+	assert (db.shape == b.shape)
+	assert (dA_prev.shape == A_prev.shape)
 
 	return	dA_prev, dW, db
 
@@ -173,10 +183,15 @@ train_X_batch_1 = train_X_batch_1.T
 # First layer is the input layer, the last layer is the output layer with 10 classes
 layer_dims = [n, 4, 4, 4, 10]
 parameters = initialize_parameters(layer_dims)
-AL, cache = forward_model(train_X_batch_1, parameters)
+AL, caches = forward_model(train_X_batch_1, parameters)
 
 cost_function(AL, y)
 
+caches_parameters = (parameters["W4"], parameters["b4"])
 
+# cache = (AL, ZL, A3)
+cache = (caches[3][0], caches[1], caches[2][0])
+
+backward_prop(y, cache, caches_parameters, "softmax")
 
 
