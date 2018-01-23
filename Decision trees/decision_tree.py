@@ -3,6 +3,8 @@ Decision Tree using Python
 Training data
 """
 import math
+import numpy as np
+
 
 training_data = [
     ['Green', 3, 'Apple'],
@@ -46,8 +48,9 @@ class Question:
         return "Is %s %s %s?" % (
             features_names[self.feature], condition, str(self.feature_value))
 
-
-def split(data, question):
+"""
+# Split to trues and falses
+def binary_split(data, question):
 
     true_rows, false_rows = [], []
     for row in data:
@@ -56,6 +59,19 @@ def split(data, question):
         else:
             false_rows.append(row)
     return true_rows, false_rows
+"""
+
+# Split data according to feature
+def split(data, feature):
+	splits = []
+	feature_values = data[:, feature]
+	# Eliminate Repetitive values
+	feature_values = list(set(feature_values))
+	for value in feature_values:
+		split = data[data[:, feature] == value]
+		splits.append(split)
+
+	return splits, feature
 
 
 # Count number of different elements in examples
@@ -70,7 +86,7 @@ def counting(data):
 	return counts
 
 
-def Gini_impurity(data):
+def gini_impurity(data):
 	counts = counting(data)
 	# Number of elements
 	# Must be converted to float
@@ -108,11 +124,41 @@ def entropy(data):
 
 # Calculate the information gain
 # CHECK / 3 options for color(green, red, yellow) not just 2 (true / false)
+"""
 def info_gain(child_left, child_right, parent_uncertainty):
 
     n = len(child_left) + len(child_right)
     average_children_uncertainty = (float(len(child_left)) / n) * Gini_impurity(child_left) + (float(len(child_right)) / n) * Gini_impurity(child_right)   
     return parent_uncertainty - average_children_uncertainty
+"""
+
+# Calculate the average of the child nodes   
+def average_gini(split, m):
+	
+	# number of childs
+	s = len(split)
+	gini = 0.0
+	for i in range(s):
+		# Number of examples for a given node
+		n = float(len(split[i]))
+		gini = gini + (gini_impurity(split[i]) * (n / m))
+
+	return gini
+
+
+
+# Return the feature with lowest gini index
+def gini_index(m, *args):
+	minimum = 10
+
+	for arg in args:
+		split = arg[0]
+		gini = average_gini(split, m)
+		if(gini < minimum):
+			minimum = gini
+			feature_to_choose = arg[1]
+
+	return feature_to_choose
 
 
 
@@ -122,9 +168,23 @@ if __name__ == '__main__':
 	#print training_data[3]
 	#print q.match(training_data[3])
 
-	trues, falses = split(training_data, q)
-	parent = Gini_impurity(training_data)
-	print trues
-	print falses
-	print parent
-	print info_gain(trues, falses, parent)
+	#trues, falses = split(training_data, q)
+	#parent = Gini_impurity(training_data)
+	#print parent
+
+	data = np.asarray(training_data)
+	
+	split1 = split(data, 0)
+	split2 = split(data, 1)
+
+	print split2[0]
+
+	parent = gini_impurity(data)
+	m = len(data)
+
+	print average_gini(split1[0], m)
+	print average_gini(split2[0], m)
+
+	print features_names[gini_index(m, split1, split2)]
+
+
