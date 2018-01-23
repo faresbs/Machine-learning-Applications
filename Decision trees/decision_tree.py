@@ -48,7 +48,7 @@ class Question:
         return "Is %s %s %s?" % (
             features_names[self.feature], condition, str(self.feature_value))
 
-"""
+
 # Split to trues and falses
 def binary_split(data, question):
 
@@ -59,9 +59,10 @@ def binary_split(data, question):
         else:
             false_rows.append(row)
     return true_rows, false_rows
-"""
+
 
 # Split data according to feature
+# Every split = (data, feature)
 def split(data, feature):
 	splits = []
 	feature_values = data[:, feature]
@@ -148,9 +149,8 @@ def average_gini(split, m):
 
 
 # Return the feature with lowest gini index
-def gini_index(m, *args):
+def gini_index(m, args):
 	minimum = 10
-
 	for arg in args:
 		split = arg[0]
 		gini = average_gini(split, m)
@@ -161,10 +161,25 @@ def gini_index(m, *args):
 	return feature_to_choose
 
 
+# This only works with discret values
+def find_best_split(data):
+
+	m = len(data)
+	nb_features = np.shape(data)[1] - 1
+	splits = []
+	averages = []
+	for i in range(nb_features):
+		splits.append(split(data, i))
+	
+	feature = features_names[gini_index(m, splits)]
+
+	return feature
+
+
 
 if __name__ == '__main__':
 	#print Question(0, 'Red')
-	q = Question(0, 'Red')
+	#q = Question(0, 'Red')
 	#print training_data[3]
 	#print q.match(training_data[3])
 
@@ -174,17 +189,19 @@ if __name__ == '__main__':
 
 	data = np.asarray(training_data)
 	
-	split1 = split(data, 0)
-	split2 = split(data, 1)
+	#split1 = split(data, 0)
+	#split2 = split(data, 1)
 
-	print split2[0]
+	#print np.shape(split1)
 
-	parent = gini_impurity(data)
-	m = len(data)
+	#parent = gini_impurity(data)
+	#m = len(data)
 
-	print average_gini(split1[0], m)
-	print average_gini(split2[0], m)
+	#print average_gini(split1[0], m)
+	#print average_gini(split2[0], m)
 
-	print features_names[gini_index(m, split1, split2)]
+	#print features_names[gini_index(m, split1, split2)]
+
+	print find_best_split(data)
 
 
