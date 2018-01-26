@@ -143,15 +143,16 @@ def backward_prop(y, cache, cached_parameters, activation):
 	y = y.T
 
 	m = np.shape(y)[1]
+
+	# dZ (same shape as Z) to use for relu
+	dZ = Z
 	
 	if(activation == "relu"):
-		if(Z > 0):
-			dZ = 1
-		else:
-			dZ = 0
+		dZ[dZ > 0] = 1
+		dZ[dZ <= 0] = 0
 
 	elif(activation == "softmax"):
-		dZ = A - y 
+		dZ = A - y
 
 	dW = (1./m) * np.dot(dZ, A_prev.T)
 	db = (1./m) * np.sum(dZ, axis=1, keepdims=True)
@@ -167,34 +168,39 @@ def backward_prop(y, cache, cached_parameters, activation):
 
 
 
-def backward_model(y, AL, caches, parameters):
+def backward_model(y, X, caches, parameters):
 	grads = {}
 	L = len(caches) 
 	m = AL.shape[1]
 
 	# caches is with the shape (4, 2) : for 4 layers | caches[0] for first layer : 2 (A and Z), 4 nodes and 10000 examples
-	
+
 	# Start with last layer    
 	caches_parameters = (parameters["W" + str(L)], parameters["b" + str(L)])
-
 	# cache = (AL, ZL, A2)
 	cache = (caches[L - 1][0], caches[L - 1][1], caches[L - 2][0])
 	# Gradients for the last layer
 	grads["dA" + str(L)], grads["dW" + str(L)], grads["db" + str(L)] = backward_prop(y, cache, caches_parameters, "softmax")
 
-	# Check with grads 
-	print grads
-
 	for l in reversed(range(1, L)):
-
+		print l
 		caches_parameters = (parameters["W" + str(l)], parameters["b" + str(l)])
+
+		# last layer A_prev takes the input layer X
+		if (l == 1):
+			A_prev = X
+		else:
+			A_prev = caches[l - 2][0]
 		# cache = (AL, ZL, A_prev)
-		cache = (caches[l - 1][0], caches[l - 1][1], caches[l - 1][0])
-		
-        dA_prev_temp, dW_temp, db_temp = backward_prop(y, cache, caches_parameters, "relu")
-        grads["dA" + str(l + 1)] = dA_prev_temp
-        grads["dW" + str(l + 1)] = dW_temp
-        grads["db" + str(l + 1)] = db_temp
+		cache = (caches[l - 1][0], caches[l - 1][1], A_prev)
+
+		dA_prev_temp, dW_temp, db_temp = backward_prop(y, cache, caches_parameters, "relu")
+		grads["dA" + str(l)] = dA_prev_temp
+		grads["dW" + str(l)] = dW_temp
+		grads["db" + str(l)] = db_temp
+
+	for key, value in grads.items():
+		print key, value.shape
 
 	return grads
 
@@ -221,7 +227,7 @@ AL, caches = forward_model(train_X_batch_1, parameters)
 
 cost_function(AL, y)
 
-backward_model(y, AL, caches, parameters)
+backward_model(y, train_X_batch_1, caches, parameters)
 
 #caches_parameters = (parameters["W4"], parameters["b4"])
 # cache = (AL, ZL, A3)
