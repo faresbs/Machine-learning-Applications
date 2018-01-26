@@ -106,7 +106,7 @@ def forward_model(X, parameters):
 		A_prev = A
 
 		A, Z = forward_propagation(A_prev, parameters['W' + str(l)], parameters['b' + str(l)], "relu")
-		
+
 		cache = (A, Z)
 		caches.append(cache)
 
@@ -147,7 +147,7 @@ def backward_prop(y, cache, cached_parameters, activation):
 	if(activation == "relu"):
 		if(Z > 0):
 			dZ = 1
-		elif (activation == "softmax"):
+		else:
 			dZ = 0
 
 	elif(activation == "softmax"):
@@ -164,6 +164,40 @@ def backward_prop(y, cache, cached_parameters, activation):
 	assert (dA_prev.shape == A_prev.shape)
 
 	return	dA_prev, dW, db
+
+
+
+def backward_model(y, AL, caches, parameters):
+	grads = {}
+	L = len(caches) 
+	m = AL.shape[1]
+
+	# caches is with the shape (4, 2) : for 4 layers | caches[0] for first layer : 2 (A and Z), 4 nodes and 10000 examples
+	
+	# Start with last layer    
+	caches_parameters = (parameters["W" + str(L)], parameters["b" + str(L)])
+
+	# cache = (AL, ZL, A2)
+	cache = (caches[L - 1][0], caches[L - 1][1], caches[L - 2][0])
+	# Gradients for the last layer
+	grads["dA" + str(L)], grads["dW" + str(L)], grads["db" + str(L)] = backward_prop(y, cache, caches_parameters, "softmax")
+
+	# Check with grads 
+	print grads
+
+	for l in reversed(range(1, L)):
+
+		caches_parameters = (parameters["W" + str(l)], parameters["b" + str(l)])
+		# cache = (AL, ZL, A_prev)
+		cache = (caches[l - 1][0], caches[l - 1][1], caches[l - 1][0])
+		
+        dA_prev_temp, dW_temp, db_temp = backward_prop(y, cache, caches_parameters, "relu")
+        grads["dA" + str(l + 1)] = dA_prev_temp
+        grads["dW" + str(l + 1)] = dW_temp
+        grads["db" + str(l + 1)] = db_temp
+
+	return grads
+
 
 
 
@@ -187,11 +221,11 @@ AL, caches = forward_model(train_X_batch_1, parameters)
 
 cost_function(AL, y)
 
-caches_parameters = (parameters["W4"], parameters["b4"])
+backward_model(y, AL, caches, parameters)
 
+#caches_parameters = (parameters["W4"], parameters["b4"])
 # cache = (AL, ZL, A3)
-cache = (caches[3][0], caches[1], caches[2][0])
-
-backward_prop(y, cache, caches_parameters, "softmax")
+#cache = (caches[3][0], caches[1], caches[2][0])
+#backward_prop(y, cache, caches_parameters, "softmax")
 
 
