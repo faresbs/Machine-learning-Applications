@@ -20,8 +20,12 @@ features_names = ["color", "diameter", "label"]
 
 def is_numeric(value):
     #Test if a value is numeric.
-    #If it's an int or float
-    return isinstance(value, int) or isinstance(value, float)
+    #If it's a float else throw an exception
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
 
 
 class Question:
@@ -69,8 +73,14 @@ def split(data, feature):
 	# Eliminate Repetitive values
 	feature_values = list(set(feature_values))
 	for value in feature_values:
-		split = data[data[:, feature] == value]
-		splits.append(split)
+		if(is_numeric(value)):
+			split = data[data[:, feature] >= value]
+			splits.append(split)
+
+		else:
+			split = data[data[:, feature] == value]
+			splits.append(split)
+
 
 	return splits, feature
 
@@ -123,17 +133,18 @@ def entropy(data):
 	return entropy
 
 
-# Calculate the information gain
-# CHECK / 3 options for color(green, red, yellow) not just 2 (true / false)
-"""
-def info_gain(child_left, child_right, parent_uncertainty):
+ 
+def info_gain(child_nodes, parent_uncertainty, m):
 
-    n = len(child_left) + len(child_right)
-    average_children_uncertainty = (float(len(child_left)) / n) * Gini_impurity(child_left) + (float(len(child_right)) / n) * Gini_impurity(child_right)   
+    average_children_uncertainty = 0
+    for node in child_nodes:
+    	average_children_uncertainty = (float(len(node)) / m) * gini_impurity(node)
+    
     return parent_uncertainty - average_children_uncertainty
-"""
 
-# Calculate the average of the child nodes   
+
+
+# Calculate the average of the child nodes   	
 def average_gini(split, m):
 	
 	# number of childs
@@ -148,7 +159,7 @@ def average_gini(split, m):
 
 
 
-# Return the feature with lowest gini index
+# Return the feature with lowest gini 
 def gini_index(m, args):
 	minimum = 10
 	for arg in args:
@@ -161,7 +172,7 @@ def gini_index(m, args):
 	return feature_to_choose
 
 
-# This only works with discret values
+
 def find_best_split(data):
 
 	m = len(data)
@@ -170,10 +181,37 @@ def find_best_split(data):
 	averages = []
 	for i in range(nb_features):
 		splits.append(split(data, i))
-	
-	feature = features_names[gini_index(m, splits)]
 
-	return feature
+	feature = features_names[gini_index(m, splits)]
+	child_nodes = splits[gini_index(m, splits)][0]
+
+	return feature, child_nodes
+
+
+# return the most recurent element
+def most_frequent():
+	return
+
+
+
+def build_tree(data):
+	m = len(data)
+	parent_uncertainty = gini_impurity(data)
+	feature, children = find_best_split(data)
+
+	gain = info_gain(children, parent_uncertainty, m)
+	
+	# Test if gain = 0 then it's a leaf
+	if(gain == 0):
+		return
+
+	# Call build tree function recursively for every child node
+	for child_node in children:
+		current_node = build_tree(child_node)
+	# Measure uncertainty for current node
+
+	return feature, child_nodes, parent_uncertainty
+
 
 
 
@@ -189,19 +227,20 @@ if __name__ == '__main__':
 
 	data = np.asarray(training_data)
 	
-	#split1 = split(data, 0)
-	#split2 = split(data, 1)
+	
+	m = len(data)
+	parent = gini_impurity(data)
+	feature, children = find_best_split(data)
+	data1 = children[2] 
+	info_gain(children, parent, m)
 
-	#print np.shape(split1)
+	m = len(data1)
+	parent1 = gini_impurity(data1)
+	feature, children1 = find_best_split(data1)
+	print parent1
+	print info_gain(children1, parent1, m)
 
-	#parent = gini_impurity(data)
-	#m = len(data)
 
-	#print average_gini(split1[0], m)
-	#print average_gini(split2[0], m)
-
-	#print features_names[gini_index(m, split1, split2)]
-
-	print find_best_split(data)
+	#find_best_split(data)
 
 
