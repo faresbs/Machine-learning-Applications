@@ -10,8 +10,9 @@ training_data = [
     ['Green', 3, 'Apple'],
     ['Yellow', 3, 'Apple'],
     ['Red', 1, 'Grape'],
-    ['Red', 1, 'Grape'],
+    ['Red', 0.5, 'Grape'],
     ['Yellow', 3, 'Lemon'],
+    ['Green', 1, 'Grape']
 ]
 
 # Column labels.
@@ -189,12 +190,28 @@ def find_best_split(data):
 
 
 # return the most recurent element
-def most_frequent():
-	return
+def most_frequent(data):
+	# count elements with diferent labels
+	counts = counting(data)
+	maximum = 0
+	for count in counts:
+		if(count >= maximum):
+			maximum = count
+
+	return maximum
+
+
+class Leaf:
+	def __init__(self, data):
+		self.predictions = counting(data)
+	
+	def __repr__(self):
+		return "Leaf: %s" % (str(self.predictions))	
 
 
 
 def build_tree(data):
+	nodes = []
 	m = len(data)
 	parent_uncertainty = gini_impurity(data)
 	feature, children = find_best_split(data)
@@ -203,14 +220,30 @@ def build_tree(data):
 	
 	# Test if gain = 0 then it's a leaf
 	if(gain == 0):
-		return
+		"""
+		result = most_frequent(data)
+		current_node = feature, result, parent_uncertainty
+		nodes.append(current_node)
+		"""
+		return Leaf(data)
 
 	# Call build tree function recursively for every child node
 	for child_node in children:
-		current_node = build_tree(child_node)
-	# Measure uncertainty for current node
+		sub_nodes = build_tree(child_node)
+	
 
-	return feature, child_nodes, parent_uncertainty
+	return feature, sub_nodes
+
+
+def classify(example, node):
+    # Base case: we've reached a leaf
+    if isinstance(node, Leaf):
+        return node.predictions
+
+    if node.question.match(example):
+        return classify(example, node.true_branch)
+    else:
+        return classify(exaple, node.false_branch)
 
 
 
@@ -227,7 +260,7 @@ if __name__ == '__main__':
 
 	data = np.asarray(training_data)
 	
-	
+	"""
 	m = len(data)
 	parent = gini_impurity(data)
 	feature, children = find_best_split(data)
@@ -240,7 +273,8 @@ if __name__ == '__main__':
 	print parent1
 	print info_gain(children1, parent1, m)
 
-
 	#find_best_split(data)
+	"""
 
-
+	my_tree = build_tree(data)
+	print my_tree
