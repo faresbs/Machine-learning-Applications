@@ -6,6 +6,9 @@ from sklearn.cross_validation import train_test_split
 
 import graphviz
 
+import time
+start_time = time.time()
+
 np.random.seed(1)
 
 # Load dataset
@@ -32,6 +35,8 @@ clf = tree.DecisionTreeClassifier()
 clf = clf.fit(train_X, train_y)
 
 # Test the model with our testing data
+print(clf.predict(test_X))
+print(test_y)
 y_pred = clf.predict(test_X)
 
 # The perfect performance is 1.0 and the worst is 0.0
@@ -43,7 +48,10 @@ graph = graphviz.Source(dot_data)
 graph.render("iris") 
 
 # Test out the graph
-print test_y[1]
-print test_X[1]
-print test_X[1][2]
-print iris.target_names	
+#print test_y[1]
+#print test_X[1]
+#print test_X[1][2]
+#print iris.target_names	
+
+
+print("--- %s seconds ---" % (time.time() - start_time))

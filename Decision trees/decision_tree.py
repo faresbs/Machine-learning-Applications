@@ -10,9 +10,12 @@ training_data = [
     ['Green', 3, 'Apple'],
     ['Yellow', 3, 'Apple'],
     ['Red', 1, 'Grape'],
-    ['Red', 0.5, 'Grape'],
-    ['Yellow', 3, 'Lemon'],
-    ['Green', 1, 'Grape']
+    ['Red', 1, 'Grape'],
+    ['Yellow', 2, 'Lemon'],
+    ['Green', 1, 'Grape'],
+    ['Yellow', 5, 'Banana'],
+    ['Yellow', 7, 'Banana'],
+    ['Yellow', 5, 'Banana']
 ]
 
 # Column labels.
@@ -65,6 +68,8 @@ def binary_split(data, question):
             false_rows.append(row)
     return true_rows, false_rows
 
+# TO FIX 
+# ONly works with discrete values
 
 # Split data according to feature
 # Every split = (data, feature)
@@ -74,13 +79,15 @@ def split(data, feature):
 	# Eliminate Repetitive values
 	feature_values = list(set(feature_values))
 	for value in feature_values:
+		"""
 		if(is_numeric(value)):
 			split = data[data[:, feature] >= value]
 			splits.append(split)
 
 		else:
-			split = data[data[:, feature] == value]
-			splits.append(split)
+		"""
+		split = data[data[:, feature] == value]
+		splits.append(split)
 
 
 	return splits, feature
@@ -194,11 +201,12 @@ def most_frequent(data):
 	# count elements with diferent labels
 	counts = counting(data)
 	maximum = 0
-	for count in counts:
-		if(count >= maximum):
-			maximum = count
+	for label in counts:
+		if(counts[label] >= maximum):
+			maximum = counts[label]
+			most_frequent = label
 
-	return maximum
+	return most_frequent
 
 
 class Leaf:
@@ -208,10 +216,15 @@ class Leaf:
 	def __repr__(self):
 		return "Leaf: %s" % (str(self.predictions))	
 
+class Decision_Node:
+    def __init__(self, feature, sub_nodes):
+        self.feature = feature
+        self.sub_nodes = sub_nodes
+
 
 
 def build_tree(data):
-	nodes = []
+
 	m = len(data)
 	parent_uncertainty = gini_impurity(data)
 	feature, children = find_best_split(data)
@@ -220,22 +233,43 @@ def build_tree(data):
 	
 	# Test if gain = 0 then it's a leaf
 	if(gain == 0):
-		"""
-		result = most_frequent(data)
-		current_node = feature, result, parent_uncertainty
-		nodes.append(current_node)
-		"""
+
 		return Leaf(data)
 
 	# Call build tree function recursively for every child node
 	for child_node in children:
 		sub_nodes = build_tree(child_node)
-	
 
-	return feature, sub_nodes
+		print_tree(sub_nodes, spacing="")
+
+	return Decision_Node(feature, sub_nodes)
 
 
-def classify(example, node):
+
+
+def print_tree(node, spacing=""):
+    """World's most elegant tree printing function."""
+
+    # Base case: we've reached a leaf
+    if isinstance(node, Leaf):
+        print (spacing + "Predict", node.predictions)
+        return
+
+    # Print the question at this node
+    print (spacing + str(node.feature))
+
+    # Call this function recursively on the true branch
+    print (spacing + '--> True:')
+    print_tree(node.sub_nodes, spacing + "  ")
+
+
+
+
+def question(feature, feature_value, example):
+	return
+
+
+def predict(example, node):
     # Base case: we've reached a leaf
     if isinstance(node, Leaf):
         return node.predictions
@@ -259,22 +293,31 @@ if __name__ == '__main__':
 	#print parent
 
 	data = np.asarray(training_data)
-	
+
 	"""
+	print data
+
 	m = len(data)
 	parent = gini_impurity(data)
 	feature, children = find_best_split(data)
-	data1 = children[2] 
-	info_gain(children, parent, m)
+	print parent
+	print info_gain(children, parent, m)
+	print children
+	
+	#print most_frequent(data)
 
+
+	data1 = children[1] 
 	m = len(data1)
 	parent1 = gini_impurity(data1)
 	feature, children1 = find_best_split(data1)
 	print parent1
 	print info_gain(children1, parent1, m)
-
-	#find_best_split(data)
+	print children1
 	"""
+
 
 	my_tree = build_tree(data)
 	print my_tree
+	#print my_tree
+	print_tree(my_tree)
