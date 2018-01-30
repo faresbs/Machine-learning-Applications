@@ -11,16 +11,12 @@ training_data = [
     ['Yellow', 3, 'Apple'],
     ['Red', 1, 'Grape'],
     ['Red', 1, 'Grape'],
-    ['Yellow', 2, 'Lemon'],
+    ['Yellow', 3, 'Lemon'],
     ['Green', 1, 'Grape'],
-    ['Yellow', 5, 'Banana'],
-    ['Yellow', 7, 'Banana'],
-    ['Yellow', 5, 'Banana']
 ]
 
-# Column labels.
 features_names = ["color", "diameter", "label"]
-
+features_index = {"color":0, "diameter":1, "label":2}
 
 def is_numeric(value):
     #Test if a value is numeric.
@@ -180,7 +176,6 @@ def gini_index(m, args):
 	return feature_to_choose
 
 
-
 def find_best_split(data):
 
 	m = len(data)
@@ -214,16 +209,22 @@ class Leaf:
 		self.predictions = counting(data)
 	
 	def __repr__(self):
-		return "Leaf: %s" % (str(self.predictions))	
+		return "%s" % (str(self.predictions))	
+
+
 
 class Decision_Node:
-    def __init__(self, feature, sub_nodes):
+    def __init__(self, feature, sub_nodes, data):
         self.feature = feature
+        self.feature_value = data[0, features_index[str(feature)]]
         self.sub_nodes = sub_nodes
+        self.data = data
 
 
 
 def build_tree(data):
+
+	nodes = []
 
 	m = len(data)
 	parent_uncertainty = gini_impurity(data)
@@ -233,34 +234,33 @@ def build_tree(data):
 	
 	# Test if gain = 0 then it's a leaf
 	if(gain == 0):
-
-		return Leaf(data)
+		nodes.append(Leaf(data))
+		return nodes
 
 	# Call build tree function recursively for every child node
 	for child_node in children:
 		sub_nodes = build_tree(child_node)
 
-		print_tree(sub_nodes, spacing="")
+		nodes.append(Decision_Node(feature, sub_nodes, child_node))
 
-	return Decision_Node(feature, sub_nodes)
-
-
+	return nodes
 
 
-def print_tree(node, spacing=""):
-    """World's most elegant tree printing function."""
+# TO FIX
+def print_tree(nodes):
+	for node in nodes:
+		if isinstance(node, Leaf):
+			print "Leaf"
+			print (node.predictions)
+			return
 
-    # Base case: we've reached a leaf
-    if isinstance(node, Leaf):
-        print (spacing + "Predict", node.predictions)
-        return
+		print (node.data)
+		print ('--> Feature:')
+    	print (node.feature)
+    	print (node.feature_value)
+    	print ('--> Children:')
+    	print_tree(node.sub_nodes)
 
-    # Print the question at this node
-    print (spacing + str(node.feature))
-
-    # Call this function recursively on the true branch
-    print (spacing + '--> True:')
-    print_tree(node.sub_nodes, spacing + "  ")
 
 
 
@@ -269,55 +269,49 @@ def question(feature, feature_value, example):
 	return
 
 
-def predict(example, node):
-    # Base case: we've reached a leaf
-    if isinstance(node, Leaf):
-        return node.predictions
+def predict(example, nodes):
+	for node in nodes:
+		question = Question(features_index[str(node.feature)], node.feature_value)
 
-    if node.question.match(example):
-        return classify(example, node.true_branch)
-    else:
-        return classify(exaple, node.false_branch)
+		if isinstance(node, Leaf):
+			return node.predictions
+
+        if question.match(example):
+        	return predict(example, node.sub_nodes)
 
 
 
 
 if __name__ == '__main__':
-	#print Question(0, 'Red')
-	#q = Question(0, 'Red')
-	#print training_data[3]
-	#print q.match(training_data[3])
-
-	#trues, falses = split(training_data, q)
-	#parent = Gini_impurity(training_data)
-	#print parent
 
 	data = np.asarray(training_data)
-
+	my_tree = build_tree(data)
+	print predict(training_data[3], my_tree)
+	
 	"""
 	print data
-
-	m = len(data)
-	parent = gini_impurity(data)
-	feature, children = find_best_split(data)
-	print parent
-	print info_gain(children, parent, m)
-	print children
-	
-	#print most_frequent(data)
-
-
-	data1 = children[1] 
-	m = len(data1)
-	parent1 = gini_impurity(data1)
-	feature, children1 = find_best_split(data1)
-	print parent1
-	print info_gain(children1, parent1, m)
-	print children1
-	"""
-
-
-	my_tree = build_tree(data)
 	print my_tree
-	#print my_tree
-	print_tree(my_tree)
+	print my_tree[0].data
+	print my_tree[0].feature
+	print my_tree[0].feature_value
+	print my_tree[0].sub_nodes
+	
+	print my_tree[1].data
+	print my_tree[1].feature
+	print my_tree[1].feature_value
+	print my_tree[1].sub_nodes
+
+	print my_tree[1].sub_nodes[0].feature
+	print my_tree[1].sub_nodes[0].feature_value
+	print my_tree[1].sub_nodes[0].sub_nodes
+	print my_tree[1].sub_nodes[1].feature
+	print my_tree[1].sub_nodes[1].feature_value
+	print my_tree[1].sub_nodes[1].sub_nodes
+"""
+	
+
+	#if isinstance(my_tree[1].sub_nodes[0].sub_nodes[0], Leaf):
+	#	print "true"
+
+	#print_tree(my_tree)
+
